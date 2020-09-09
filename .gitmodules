@@ -1,0 +1,6 @@
+[submodule "extern/development-utils"]
+	path = extern/development-utils
+	url = https://github.com/nakane1chome/development-utils.git
+[submodule "extern/riscv-isa-data"]
+	path = extern/riscv-isa-data
+	url = https://github.com/five-embeddev/riscv-isa-data.git
