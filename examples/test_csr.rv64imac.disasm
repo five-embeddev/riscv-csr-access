@@ -1,0 +1,57 @@
+
+test_csr.rv64imac.elf:     file format elf64-littleriscv
+
+
+Disassembly of section .text:
+
+00000000000100b0 <main>:
+/*******************************************
+ * mcause - MRW - Machine Exception Cause 
+ */
+static inline uint_xlen_t csr_read_mcause(void) {
+    uint_xlen_t value;        
+    __asm__ volatile ("csrr    %0, mcause" 
+   100b0:	342027f3          	csrr	a5,mcause
+static volatile uint_xlen_t saved_mtvec;
+
+int main(void) {
+
+    uint_xlen_t cause = csr_read_mcause();
+    if (cause & MCAUSE_INTERRUPT_BIT_MASK) {
+   100b4:	0007c663          	bltz	a5,100c0 <main+0x10>
+    __asm__ volatile ("csrr    %0, mepc" 
+   100b8:	341027f3          	csrr	a5,mepc
+    __asm__ volatile ("csrw    mscratch, %0" 
+   100bc:	34079073          	csrw	mscratch,a5
+        uint_xlen_t mepc =  csr_read_mepc();
+        // Pointless save to mscratch
+        csr_write_mscratch(mepc);
+    }
+    // Enable MIE.MSI    
+    CSR_SET_BITS_IMM_MIE(MIE_MSI_BIT_MASK);
+   100c0:	30446073          	csrsi	mie,8
+    __asm__ volatile ("csrrs    zero, mie, %0"  
+   100c4:	08000793          	li	a5,128
+   100c8:	3047a073          	csrs	mie,a5
+    __asm__ volatile ("csrrc    %0, mtvec, %1"  
+   100cc:	478d                	li	a5,3
+   100ce:	3057b7f3          	csrrc	a5,mtvec,a5
+    // Enable MIE.MTI
+    csr_set_bits_mie(MIE_MTI_BIT_MASK);
+    // Clear mode and read mtvec.
+    uint_xlen_t old_mtvec = csr_read_clr_bits_mtvec(MTVEC_MODE_ALL_SET_MASK);
+    if (old_mtvec & MTVEC_MODE_ALL_SET_MASK) {
+   100d2:	0037f713          	andi	a4,a5,3
+   100d6:	c701                	beqz	a4,100de <main+0x2e>
+        // Remove mode bits
+        old_mtvec &= MTVEC_BASE_ALL_SET_MASK;
+   100d8:	4705                	li	a4,1
+   100da:	1776                	slli	a4,a4,0x3d
+   100dc:	8ff9                	and	a5,a5,a4
+    }
+    saved_mtvec = old_mtvec;
+   100de:	6745                	lui	a4,0x11
+   100e0:	0ef73423          	sd	a5,232(a4) # 110e8 <__DATA_BEGIN__>
+}
+   100e4:	4501                	li	a0,0
+   100e6:	8082                	ret

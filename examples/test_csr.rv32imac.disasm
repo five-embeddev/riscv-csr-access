@@ -1,0 +1,56 @@
+
+test_csr.rv32imac.elf:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00010074 <main>:
+/*******************************************
+ * mcause - MRW - Machine Exception Cause 
+ */
+static inline uint_xlen_t csr_read_mcause(void) {
+    uint_xlen_t value;        
+    __asm__ volatile ("csrr    %0, mcause" 
+   10074:	342027f3          	csrr	a5,mcause
+static volatile uint_xlen_t saved_mtvec;
+
+int main(void) {
+
+    uint_xlen_t cause = csr_read_mcause();
+    if (cause & MCAUSE_INTERRUPT_BIT_MASK) {
+   10078:	0007c663          	bltz	a5,10084 <main+0x10>
+    __asm__ volatile ("csrr    %0, mepc" 
+   1007c:	341027f3          	csrr	a5,mepc
+    __asm__ volatile ("csrw    mscratch, %0" 
+   10080:	34079073          	csrw	mscratch,a5
+        uint_xlen_t mepc =  csr_read_mepc();
+        // Pointless save to mscratch
+        csr_write_mscratch(mepc);
+    }
+    // Enable MIE.MSI    
+    CSR_SET_BITS_IMM_MIE(MIE_MSI_BIT_MASK);
+   10084:	30446073          	csrsi	mie,8
+    __asm__ volatile ("csrrs    zero, mie, %0"  
+   10088:	08000793          	li	a5,128
+   1008c:	3047a073          	csrs	mie,a5
+    __asm__ volatile ("csrrc    %0, mtvec, %1"  
+   10090:	478d                	li	a5,3
+   10092:	3057b7f3          	csrrc	a5,mtvec,a5
+    // Enable MIE.MTI
+    csr_set_bits_mie(MIE_MTI_BIT_MASK);
+    // Clear mode and read mtvec.
+    uint_xlen_t old_mtvec = csr_read_clr_bits_mtvec(MTVEC_MODE_ALL_SET_MASK);
+    if (old_mtvec & MTVEC_MODE_ALL_SET_MASK) {
+   10096:	0037f713          	andi	a4,a5,3
+   1009a:	c701                	beqz	a4,100a2 <main+0x2e>
+        // Remove mode bits
+        old_mtvec &= MTVEC_BASE_ALL_SET_MASK;
+   1009c:	20000737          	lui	a4,0x20000
+   100a0:	8ff9                	and	a5,a5,a4
+    }
+    saved_mtvec = old_mtvec;
+   100a2:	6745                	lui	a4,0x11
+   100a4:	0af72623          	sw	a5,172(a4) # 110ac <__DATA_BEGIN__>
+}
+   100a8:	4501                	li	a0,0
+   100aa:	8082                	ret

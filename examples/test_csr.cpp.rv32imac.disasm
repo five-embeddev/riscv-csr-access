@@ -1,0 +1,69 @@
+
+test_csr.cpp.rv32imac.elf:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00010074 <main>:
+            static uint_xlen_t read(void) {
+                uint_xlen_t value;        
+                __asm__ volatile ("csrr    %0, mcause" 
+                                  : "=r" (value)  /* output : register */
+                                  : /* input : none */
+                                  : /* clobbers: none */);
+   10074:	342027f3          	csrr	a5,mcause
+int main(void) {
+
+    riscv::csr::all csrs;
+
+    auto cause = csrs.mcause.read();
+    if (cause & riscv::csr::mcause_data::interrupt::BIT_MASK) {
+   10078:	0407d263          	bgez	a5,100bc <main+0x48>
+                                  : /* clobbers: none */);
+   1007c:	344027f3          	csrr	a5,mip
+                                  : /* clobbers: none */);
+   10080:	30446073          	csrsi	mie,8
+                                  : /* clobbers: none */);
+   10084:	08000793          	li	a5,128
+   10088:	3047a073          	csrs	mie,a5
+                                  : /* clobbers: none */);
+   1008c:	3051f7f3          	csrrci	a5,mtvec,3
+    csrs.mie.msi.set();
+    // Enable MIE.MTI
+    csrs.mie.mti.set();
+    // Clear mode and read mtvec.
+    auto old_mtvec = csrs.mtvec.read_clr_bits_const<riscv::csr::mtvec_data::mode::ALL_SET_MASK>();
+    if (old_mtvec & riscv::csr::mtvec_data::mode::ALL_SET_MASK) {
+   10090:	0037f713          	andi	a4,a5,3
+   10094:	c701                	beqz	a4,1009c <main+0x28>
+        // Remove mode bits
+        old_mtvec &= riscv::csr::mtvec_data::base::ALL_SET_MASK;
+   10096:	20000737          	lui	a4,0x20000
+   1009a:	8ff9                	and	a5,a5,a4
+    }
+    saved_mtvec = old_mtvec;
+   1009c:	6745                	lui	a4,0x11
+   1009e:	0ef72823          	sw	a5,240(a4) # 110f0 <__DATA_BEGIN__>
+                                  : /* clobbers: none */);
+   100a2:	47c1                	li	a5,16
+   100a4:	30579073          	csrw	mtvec,a5
+                                  : /* clobbers: none */);
+   100a8:	30585073          	csrwi	mtvec,16
+                                  : /* clobbers: none */);
+   100ac:	001007b7          	lui	a5,0x100
+   100b0:	30579073          	csrw	mtvec,a5
+                                  : /* clobbers: none */);
+   100b4:	b00027f3          	csrr	a5,mcycle
+    // Enable the cycle count
+    csrs.mcountinhibit.cy.write(0);
+    // Enable the hpm count
+    csrs.mcountinhibit.hpm.clr();
+#endif
+}
+   100b8:	4501                	li	a0,0
+   100ba:	8082                	ret
+                                  : /* clobbers: none */);
+   100bc:	341027f3          	csrr	a5,mepc
+                                  : /* clobbers: none */);
+   100c0:	34079073          	csrw	mscratch,a5
+   100c4:	bf75                	j	10080 <main+0xc>
