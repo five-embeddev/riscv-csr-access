@@ -13939,6 +13939,9 @@ namespace riscv {
         };
 
     } /* csr */
+
+    static csr::all csrs;
+
 } /* riscv */
 
 #endif // #define RISCV_CSR_HPP
