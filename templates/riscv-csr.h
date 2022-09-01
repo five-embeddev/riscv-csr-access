@@ -23,6 +23,13 @@ typedef uint64_t uint_csr64_t;
 #error "Unknown XLEN"
 #endif
 
+// Test for Zicsr extension, if relevant
+#if defined(__riscv_arch_test)
+#if !defined(__riscv_zicsr)
+#error "-march must include zicsr to access CSRs" 
+#endif
+#endif
+
 
 {%- for reg_name,reg_data in data.regs.items() %}
     {%- if not reg_data.mmio %}

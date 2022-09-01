@@ -1,16 +1,17 @@
 SRC=test_csr.c
 SRC_BASE=test_csr
-CROSS_COMPILE=riscv-none-embed-
+#CROSS_COMPILE=riscv-none-embed-
+CROSS_COMPILE=riscv-none-elf-
 GCC=${CROSS_COMPILE}gcc
 GXX=${CROSS_COMPILE}g++
 OBJDUMP=${CROSS_COMPILE}objdump
 
 SPEC_TARGETS=\
-     rv32imac \
-     rv64imac
+     rv32imac_zicsr \
+     rv64imac_zicsr
 
-MABI_rv32imac=ilp32
-MABI_rv64imac=lp64
+MABI_rv32imac_zicsr=ilp32
+MABI_rv64imac_zicsr=lp64
 
 ALL=\
 	$(SPEC_TARGETS:%=test_csr.c.%.disasm) \
@@ -31,6 +32,7 @@ ${SRC_BASE}.c.%.disasm : ${SRC_BASE}.c
 		-g \
 		$< -o $(basename $@).elf
 	${OBJDUMP} -S $(basename $@).elf > $@
+
 
 ${SRC_BASE}.cpp.%.disasm : ${SRC_BASE}.cpp
 	@echo "[TARGET $*]"

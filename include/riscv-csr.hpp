@@ -11,6 +11,13 @@
 
 #include <cstdint>
 
+// Test for Zicsr extension, if relevant
+#if defined(__riscv_arch_test)
+#if !defined(__riscv_zicsr)
+#error "-march must include zicsr to access CSRs" 
+#endif
+#endif
+
 // ------------------------------------------------------------------------
 // Base and common classes
 
