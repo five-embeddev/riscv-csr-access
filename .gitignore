@@ -38,3 +38,5 @@
 # Emacs!
 *~
 
+# Rust
+rs/riscv_csr_macros/target
